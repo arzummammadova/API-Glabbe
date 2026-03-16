@@ -1,11 +1,13 @@
+import "dotenv/config";
 import express from "express";
-import dotenv from "dotenv";
-
+import authRouter from "./src/routers/authRouters.js";
 import './src/db/connectDB.js';
-const app = express();
 
+const app = express();
 const PORT = process.env.PORT || 5000;
-dotenv.config();  
+
+app.use(express.json());
+app.use("/api/auth", authRouter);
 app.get("/",(req,res)=>{
     res.send("salam dostlar run olur ")
 })
