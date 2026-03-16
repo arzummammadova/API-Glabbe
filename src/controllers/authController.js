@@ -5,14 +5,12 @@ const registerUser=async(req,res)=>{
 
     try {
 
-        const {username,firstName,lastName,password,phone,businessType}=req.body;
+        const {username,firstName,lastName,password,email,businessType}=req.body;
 
-        if(!username || !firstName || !lastName || !password || !phone || !businessType ){
+        if(!username || !firstName || !lastName || !password || !email || !businessType  ){
             return res.status(400).json({message:"All fields are required"})
         }
-
         const user=await User.findOne({username});
-
         const userUrl=process.env.BASE_URL + "/" + username;
         if(user){
             return res.status(400).json({message:"User already exists"})
@@ -22,10 +20,12 @@ const registerUser=async(req,res)=>{
             firstName,
             lastName,
             password,
-            phone,
+            email,
             businessType,
-            userURL
+            userUrl
         })
+        
+        
        
         await newUser.save();
         res.status(201).json({message:"User registered successfully",user:newUser})
