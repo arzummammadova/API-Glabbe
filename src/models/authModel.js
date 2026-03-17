@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import bcrypt from "bcryptjs"
 
 const  userSchema=new mongoose.Schema({
     username:{
@@ -36,7 +37,7 @@ const  userSchema=new mongoose.Schema({
 
     businessType:{
         type:String,
-        enum:["business","doctor","lawyer","accountant","nail salon","hair salon","spa","beauty salon","other","massage","barber","tattoo","piercing","other"],
+        enum:["business","doctor","lawyer","accountant","nail salon","hair salon","spa","beauty salon","massage","barber","tattoo","piercing","other"],
         default:"other"
     },
     bio:{
@@ -53,13 +54,36 @@ const  userSchema=new mongoose.Schema({
     },
     userURL:{
         type:String,
-        required:true,
+        required:false,
+    },
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
+    verificationToken:{
+        type:String,
+        required:false
     }
     
 
 
 
 },{timestamps:true})
+
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
+userSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
 
 
 export const User=mongoose.model("User",userSchema)
