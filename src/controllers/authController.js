@@ -17,6 +17,8 @@ export const registerUser = async (req, res) => {
 
         const verificationToken = crypto.randomBytes(32).toString("hex");
 
+        const isFirstUser = (await User.countDocuments()) === 0;
+
         const newUser = new User({
             username,
             firstName,
@@ -25,12 +27,13 @@ export const registerUser = async (req, res) => {
             email,
             phone,
             businessType,
-            verificationToken
+            verificationToken,
+            role: isFirstUser ? "admin" : "user"
         });
 
         await newUser.save();
 
-        const verificationUrl = `${process.env.BASE_URL}/api/auth/verify-email/${verificationToken}`;
+        const verificationUrl = `${process.env.BASE_URL}/verify-email/${verificationToken}`;
 
         const mailOptions = {
             from: `"Glabbe" <${process.env.EMAIL_USER}>`,
@@ -180,12 +183,13 @@ export const loginUser = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                plan: user.plan,
+                subscriptionExpiration: user.subscriptionExpiration
             }
         });
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
@@ -199,5 +203,178 @@ export const getMe = async (req, res) => {
         res.status(200).json(user);
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
+export const updateMe = async (req, res) => {
+    try {
+        const { userId } = req.user;
+        const updates = req.body;
+
+        // Security: Prevent updating sensitive fields
+        delete updates.email;
+        delete updates.password;
+        delete updates.role;
+        delete updates.plan;
+        delete updates.subscriptionExpiration;
+        delete updates.isVerified;
+        delete updates.verificationToken;
+        delete updates.resetPasswordToken;
+        delete updates.resetPasswordExpires;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updates },
+            { new: true, runValidators: true }
+        ).select("-password -verificationToken");
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "İstifadəçi tapılmadı" });
+        }
+
+        res.status(200).json({
+            message: "Profiliniz uğurla yeniləndi",
+            user: updatedUser
+        });
+
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ message: "İstifadəçi adı və ya telefon artıq istifadə olunur" });
+        }
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "Bu email ilə istifadəçi tapılmadı" });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        await user.save();
+
+        const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
+
+        const mailOptions = {
+            from: `"Glabbe" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Password Reset - Glabbe",
+            html: `
+                <div style="font-family: 'Inter', sans-serif; max-width: 500px; margin: 40px auto; color: #1a1a1a;">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <img src="cid:glabbelogo" alt="Glabbe Logo" style="height: 50px;">
+                    </div>
+                    <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 24px; color: #000;">Şifrəni Yenilə</h2>
+                    <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin-bottom: 24px;">Siz şifrənizi sıfırlamaq üçün müraciət etmisiniz. Aşağıdakı düyməyə klikləyərək yeni şifrə təyin edə bilərsiniz:</p>
+                    <div style="text-align: center; margin: 32px 0;">
+                        <a href="${resetUrl}" style="background-color: #0277FA; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Reset Password</a>
+                    </div>
+                    <p style="font-size: 14px; color: #ef4444;">Bu link 1 saat ərzində etibarlıdır.</p>
+                </div>
+            `,
+            attachments: [{
+                filename: 'logo.png',
+                path: 'c:\\Users\\hp\\Desktop\\Glabbe\\back-end\\src\\upload\\logo.png',
+                cid: 'glabbelogo'
+            }]
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: "Şifrə sıfırlama linki emailinizə göndərildi" });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Token etibarsızdır və ya vaxtı bitib" });
+        }
+
+        user.password = password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.status(200).json({ message: "Şifrəniz uğurla yeniləndi. İndi daxil ola bilərsiniz." });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
+// --- ADMIN CONTROLLERS ---
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select("-password -verificationToken");
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: "Server xətası", error: error.message });
+    }
+};
+
+export const updateUserPlan = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { plan, period } = req.body; // period: "month", "year", "7days"
+
+        if (!["pro", "adi"].includes(plan)) {
+            return res.status(400).json({ message: "Yanlış plan tipi" });
+        }
+
+        let expirationDate = new Date();
+
+        if (plan === "pro") {
+            if (period === "year") {
+                expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+            } else if (period === "month") {
+                expirationDate.setMonth(expirationDate.getMonth() + 1);
+            } else {
+                expirationDate.setMonth(expirationDate.getMonth() + 1); // default 1 month
+            }
+        } else {
+            if (period === "7days") {
+                expirationDate.setDate(expirationDate.getDate() + 7);
+            } else {
+                expirationDate = new Date(Date.now() - 1000); // Expired if reverted to adi without specific trial
+            }
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { plan, subscriptionExpiration: expirationDate },
+            { new: true }
+        ).select("-password -verificationToken");
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "İstifadəçi tapılmadı" });
+        }
+
+        res.status(200).json({
+            message: `İstifadəçi planı yeniləndi: ${plan} (${period || 'default'})`,
+            user: updatedUser
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server xətası", error: error.message });
     }
 };

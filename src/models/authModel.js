@@ -63,21 +63,33 @@ const  userSchema=new mongoose.Schema({
     verificationToken:{
         type:String,
         required:false
+    },
+    resetPasswordToken:{
+        type:String,
+        required:false
+    },
+    resetPasswordExpires:{
+        type:Date,
+        required:false
+    },
+    plan: {
+        type: String,
+        enum: ["pro", "adi"],
+        default: "adi"
+    },
+    subscriptionExpiration: {
+        type: Date,
+        default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days trial by default
     }
-    
-
-
-
 },{timestamps:true})
 
-userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
+userSchema.pre("save", async function() {
+    if (!this.isModified("password")) return;
     try {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
-        next();
     } catch (error) {
-        next(error);
+        throw error;
     }
 });
 

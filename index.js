@@ -12,10 +12,11 @@ const PORT = process.env.PORT || 5000;
 
 // Security Middleware
 app.use(helmet()); // Sets various HTTP headers for security
-app.use(cors({
-    origin: process.env.BASE_URL || "*", // Allow only the frontend URL to access the API
-    credentials: true
-})); 
+// app.use(cors({
+//     origin: process.env.BASE_URL || "*", // Allow only the frontend URL to access the API
+//     credentials: true
+// })); 
+app.use(cors()); // Allow all origins to access the API
 app.use(morgan("dev")); // Request logging
 
 // Rate Limiting (Prevents Brute Force/DoS)

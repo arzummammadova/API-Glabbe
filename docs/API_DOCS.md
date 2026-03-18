@@ -46,27 +46,53 @@ Sistemə daxil olmaq və JWT token əldə etmək üçün.
 - **Uğurlu Status:** `200 OK`
 - **Cavab:** `token` və `user` məlumatları.
 - **Qeyd:** Email təsdiq olunmayıbsa girişə icazə verilmir.
+- **Plan Məlumatı:** Cavabda `plan` ("adi" və ya "pro") və `subscriptionExpiration` (planın bitmə tarixi) qaytarılır.
 
 ---
 
 ### 3. Email Təsdiqləmə (Verify Email)
-Emaildə gələn link vasitəsilə hesabın aktiv edilməsi.
-- **URL:** `/auth/verify-email/:token`
-- **Method:** `GET`
-- **Qeyd:** Bu link brauzerdə açılır və uğurlu olduqda vizual təsdiqləmə səhifəsi göstərir.
+... (qaldığı kimi)
 
 ---
 
 ### 4. Şəxsi Məlumatlar (Get Me)
-Daxil olmuş istifadəçinin profil məlumatlarını gətirir.
-- **URL:** `/auth/me`
+Daxil olmuş istifadəçinin profil məlumatlarını gətirir. Buraya `plan` və `subscriptionExpiration` da daxildir.
+
+---
+
+### 5. Profilin Yenilənməsi (Update Me)
+... (qaldığı kimi)
+
+---
+
+## 👑 Admin Paneli (Yalnız Adminlər üçün)
+
+### 1. Bütün İstifadəçiləri Getir
+Sistemdəki bütün istifadəçilərin listini gətirir.
+- **URL:** `/auth/users`
 - **Method:** `GET`
-- **Headers:** `Authorization: Bearer <TOKEN>`
-- **Uğurlu Status:** `200 OK`
+- **Headers:** `Authorization: Bearer <ADMIN_TOKEN>`
+
+---
+
+### 2. İstifadəçi Planını Yenilə
+İstifadəçini PRO-ya keçirir və ya planını dəyişir.
+- **URL:** `/auth/users/:id/plan`
+- **Method:** `PUT`
+- **Headers:** `Authorization: Bearer <ADMIN_TOKEN>`
+- **Body:**
+```json
+{
+  "plan": "pro",
+  "period": "month" 
+}
+```
+*`period` seçimləri: `"month"`, `"year"`, `"7days"`*
 
 ---
 
 ## 🛡️ Təhlükəsizlik Tədbirləri
+...
 - **Helmet:** HTTP başlıqlarının təhlükəsizliyi.
 - **CORS:** Yalnız icazə verilmiş domenlərin girişi.
 - **Rate Limit:** 15 dəqiqə ərzində max 100 müraciət.
