@@ -113,6 +113,8 @@ Xidmət təminatçısı özü üçün rezervasiya əlavə edir.
 ```json
 {
   "customerName": "Müştəri Adı",
+  "customerPhone": "+994500000000",
+  "note": "Xüsusi istək...",
   "service": "Saç kəsimi",
   "date": "2024-03-25",
   "startTime": "14:00",
@@ -131,6 +133,8 @@ Müştəri provider-in `userURL`-i vasitəsilə rezervasiya istəyi göndərir.
 ```json
 {
   "customerName": "Müştəri Adı",
+  "customerPhone": "+994700000000",
+  "note": "Gecikə bilərəm",
   "service": "Saç kəsimi",
   "date": "2024-03-25",
   "startTime": "10:00",
@@ -142,10 +146,23 @@ Müştəri provider-in `userURL`-i vasitəsilə rezervasiya istəyi göndərir.
 ---
 
 ### 3. Rezervasiyalarımı Gətir
-Provider özünə aid bütün rezervasiyaları görür.
+Provider özünə aid bütün rezervasiyaları görür. Həmçinin statistika qaytarılır.
 - **URL:** `/api/reservations`
 - **Method:** `GET`
 - **Headers:** `Authorization: Bearer <TOKEN>`
+- **Query Params:** `?status=pending` (isteğe bağlı: `accepted`, `rejected`, `pending`)
+- **Cavab Nümunəsi:**
+```json
+{
+  "stats": {
+    "total": 10,
+    "accepted": 5,
+    "pending": 3,
+    "rejected": 2
+  },
+  "reservations": [...]
+}
+```
 
 ---
 

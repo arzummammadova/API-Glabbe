@@ -1,5 +1,6 @@
 import { Reservation } from "../models/reservationModel.js";
 import { User } from "../models/authModel.js";
+import mongoose from "mongoose";
 
 // Helper to check for overlapping reservations
 const isOverlapping = async (userId, date, startTime, endTime) => {
@@ -24,7 +25,7 @@ const isOverlapping = async (userId, date, startTime, endTime) => {
 // Provider creates a reservation (Automatically accepted)
 export const createReservationByUser = async (req, res) => {
     try {
-        const { customerName, service, date, startTime, endTime } = req.body;
+        const { customerName, customerPhone, note, service, date, startTime, endTime } = req.body;
         const userId = req.user.userId;
 
         if (startTime >= endTime) {
@@ -38,6 +39,8 @@ export const createReservationByUser = async (req, res) => {
         const newReservation = new Reservation({
             userId,
             customerName,
+            customerPhone,
+            note,
             service,
             date,
             startTime,
@@ -57,7 +60,7 @@ export const createReservationByUser = async (req, res) => {
 export const createReservationByCustomer = async (req, res) => {
     try {
         const { userURL } = req.params;
-        const { customerName, service, date, startTime, endTime } = req.body;
+        const { customerName, customerPhone, note, service, date, startTime, endTime } = req.body;
 
         const user = await User.findOne({ userURL });
         if (!user) {
@@ -75,6 +78,8 @@ export const createReservationByCustomer = async (req, res) => {
         const newReservation = new Reservation({
             userId: user._id,
             customerName,
+            customerPhone,
+            note,
             service,
             date,
             startTime,
@@ -90,12 +95,36 @@ export const createReservationByCustomer = async (req, res) => {
     }
 };
 
-// Get all reservations for the logged-in provider
+// Get all reservations for the logged-in provider with filtering and stats
 export const getMyReservations = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const reservations = await Reservation.find({ userId }).sort({ date: 1, startTime: 1 });
-        res.status(200).json(reservations);
+        const { status } = req.query; // accepted, rejected, pending
+
+        const query = { userId };
+        if (status && ["accepted", "rejected", "pending"].includes(status)) {
+            query.status = status;
+        }
+
+        const reservations = await Reservation.find(query).sort({ date: 1, startTime: 1 });
+
+        // Get counts for all statuses
+        const stats = await Reservation.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]);
+
+        const formattedStats = {
+            total: stats.reduce((acc, curr) => acc + curr.count, 0),
+            accepted: stats.find(s => s._id === "accepted")?.count || 0,
+            pending: stats.find(s => s._id === "pending")?.count || 0,
+            rejected: stats.find(s => s._id === "rejected")?.count || 0
+        };
+
+        res.status(200).json({
+            stats: formattedStats,
+            reservations
+        });
     } catch (error) {
         res.status(500).json({ message: "Server xətası", error: error.message });
     }
