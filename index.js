@@ -5,6 +5,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import authRouter from "./src/routers/authRouters.js";
+import reservationRouter from "./src/routers/reservationRouters.js";
 import './src/db/connectDB.js';
 
 const app = express();
@@ -31,6 +32,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRouter);
+app.use("/api/reservations", reservationRouter);
 
 app.get("/", (req, res) => {
     res.send("Glabbe API is running safely 🚀");

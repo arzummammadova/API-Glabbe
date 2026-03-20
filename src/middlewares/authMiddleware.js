@@ -36,7 +36,12 @@ export const authMiddleware = async (req, res, next) => {
             });
         }
 
-        req.user = decoded;
+        // Set req.user with latest DB data (ensures latest role/plan)
+        req.user = { 
+            userId: user._id.toString(), 
+            role: user.role,
+            plan: user.plan 
+        };
         next();
     } catch (error) {
         res.status(401).json({ message: "Token etibarsızdır" });

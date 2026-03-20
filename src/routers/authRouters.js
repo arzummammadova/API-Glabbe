@@ -7,7 +7,9 @@ import {
     forgotPassword, 
     resetPassword,
     getAllUsers,
-    updateUserPlan
+    getUserById,
+    updateUserPlan,
+    deleteUser
 } from "../controllers/authController.js";
 import { validate } from "../middlewares/validateMiddleware.js";
 import { authMiddleware, adminMiddleware } from "../middlewares/authMiddleware.js";
@@ -35,6 +37,8 @@ authRouter.put("/me", authMiddleware, validate(updateMeSchema), updateMe);
 
 // Admin routes (Required Admin)
 authRouter.get("/users", authMiddleware, adminMiddleware, getAllUsers);
+authRouter.get("/users/:id", authMiddleware, adminMiddleware, getUserById);
 authRouter.put("/users/:id/plan", authMiddleware, adminMiddleware, updateUserPlan);
+authRouter.delete("/users/:id", authMiddleware, adminMiddleware, deleteUser);
 
 export default authRouter;

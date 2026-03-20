@@ -332,18 +332,35 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
+export const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id).select("-password -verificationToken");
+
+        if (!user) {
+            return res.status(404).json({ message: "İstifadəçi tapılmadı" });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Server xətası", error: error.message });
+    }
+};
+
 export const updateUserPlan = async (req, res) => {
     try {
         const { id } = req.params;
         const { plan, period } = req.body; // period: "month", "year", "7days"
 
-        if (!["pro", "adi"].includes(plan)) {
-            return res.status(400).json({ message: "Yanlış plan tipi" });
+        const normalizedPlan = plan === "free" ? "adi" : plan;
+
+        if (!["pro", "adi"].includes(normalizedPlan)) {
+            return res.status(400).json({ message: "Yanlış plan tipi (Yalnız pro və ya adi/free)" });
         }
 
         let expirationDate = new Date();
 
-        if (plan === "pro") {
+        if (normalizedPlan === "pro") {
             if (period === "year") {
                 expirationDate.setFullYear(expirationDate.getFullYear() + 1);
             } else if (period === "month") {
@@ -361,7 +378,7 @@ export const updateUserPlan = async (req, res) => {
 
         const updatedUser = await User.findByIdAndUpdate(
             id,
-            { plan, subscriptionExpiration: expirationDate },
+            { plan: normalizedPlan, subscriptionExpiration: expirationDate },
             { new: true }
         ).select("-password -verificationToken");
 
@@ -370,10 +387,25 @@ export const updateUserPlan = async (req, res) => {
         }
 
         res.status(200).json({
-            message: `İstifadəçi planı yeniləndi: ${plan} (${period || 'default'})`,
+            message: `İstifadəçi planı yeniləndi: ${normalizedPlan} (${period || 'default'})`,
             user: updatedUser
         });
 
+    } catch (error) {
+        res.status(500).json({ message: "Server xətası", error: error.message });
+    }
+};
+
+export const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByIdAndDelete(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "İstifadəçi tapılmadı" });
+        }
+
+        res.status(200).json({ message: "İstifadəçi uğurla silindi" });
     } catch (error) {
         res.status(500).json({ message: "Server xətası", error: error.message });
     }
