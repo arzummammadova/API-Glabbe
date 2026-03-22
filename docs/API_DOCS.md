@@ -188,6 +188,59 @@ Provider gələn müraciəti təsdiqləyir və ya rədd edir.
 
 ---
 
+## 👥 Müştəri Sahəsi (Customers)
+
+Bu sahə xidmət təminatçılarına öz müştəri bazalarını idarə etməyə imkan verir.
+
+### 1. Yeni Müştəri Əlavə Et
+- **URL:** `/api/customers`
+- **Method:** `POST`
+- **Headers:** `Authorization: Bearer <TOKEN>`
+- **Body:**
+```json
+{
+  "firstName": "Əli",
+  "lastName": "Vəliyev",
+  "email": "ali@example.com",
+  "phone": "+994501234567",
+  "note": "Daimi müştəri",
+  "birthDate": "1990-05-15",
+  "address": "Bakı ş., Nərimanov r."
+}
+```
+
+### 2. Bütün Müştəriləri Gətir
+- **URL:** `/api/customers`
+- **Method:** `GET`
+- **Headers:** `Authorization: Bearer <TOKEN>`
+
+### 3. Müştəri Məlumatlarını Gətir (ID ilə)
+- **URL:** `/api/customers/:id`
+- **Method:** `GET`
+- **Headers:** `Authorization: Bearer <TOKEN>`
+
+### 4. Müştəri Məlumatlarını Yenilə
+- **URL:** `/api/customers/:id`
+- **Method:** `PUT`
+- **Headers:** `Authorization: Bearer <TOKEN>`
+- **Body:**
+```json
+{
+  "note": "Yeni qeyd əlavə edildi",
+  "phone": "+994701234567"
+}
+```
+
+### 5. Müştərini Sil
+- **URL:** `/api/customers/:id`
+- **Method:** `DELETE`
+- **Headers:** `Authorization: Bearer <TOKEN>`
+
+---
+
+
+---
+
 ## 🛡️ Təhlükəsizlik Tədbirləri
 ...
 - **Helmet:** HTTP başlıqlarının təhlükəsizliyi.
