@@ -25,7 +25,7 @@ const isOverlapping = async (userId, date, startTime, endTime) => {
 // Provider creates a reservation (Automatically accepted)
 export const createReservationByUser = async (req, res) => {
     try {
-        const { customerName, customerPhone, note, service, date, startTime, endTime } = req.body;
+        const { customerName, customerPhone, note, services, price, date, startTime, endTime } = req.body;
         const userId = req.user.userId;
 
         if (startTime >= endTime) {
@@ -42,6 +42,7 @@ export const createReservationByUser = async (req, res) => {
             customerPhone,
             note,
             service,
+            price,
             date,
             startTime,
             endTime,
@@ -60,7 +61,7 @@ export const createReservationByUser = async (req, res) => {
 export const createReservationByCustomer = async (req, res) => {
     try {
         const { userURL } = req.params;
-        const { customerName, customerPhone, note, service, date, startTime, endTime } = req.body;
+        const { customerName, customerPhone, note, service, price, date, startTime, endTime } = req.body;
 
         const user = await User.findOne({ userURL });
         if (!user) {
@@ -81,6 +82,7 @@ export const createReservationByCustomer = async (req, res) => {
             customerPhone,
             note,
             service,
+            price,
             date,
             startTime,
             endTime,

@@ -24,7 +24,7 @@ app.use(morgan("dev")); // Request logging
 // Rate Limiting (Prevents Brute Force/DoS)
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 10000, // Limit each IP to 100 requests per windowMs
     message: "Həddindən artıq müraciət edildi, xahiş edirik 15 dəqiqə sonra yenidən yoxlayın."
 });
 app.use("/api/", limiter);

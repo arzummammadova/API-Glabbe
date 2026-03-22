@@ -52,6 +52,12 @@ const  userSchema=new mongoose.Schema({
         type:Number,
         required:false,
     },
+    services: [
+        {
+            name: { type: String, required: true },
+            price: { type: Number, required: true }
+        }
+    ],
     userURL:{
         type:String,
         required:false,

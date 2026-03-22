@@ -63,7 +63,14 @@ export const updateMeSchema = Joi.object({
         "tattoo", "piercing", "other"
     ).optional(),
     bio: Joi.string().max(500).allow("", null),
-    duration: Joi.number().optional(),
-    price: Joi.number().optional(),
-    userURL: Joi.string().allow("", null)
+    duration: Joi.number().optional().allow(null),
+    price: Joi.number().optional().allow(null),
+    userURL: Joi.string().allow("", null),
+    services: Joi.array().items(
+        Joi.object({
+            _id: Joi.string().optional(),
+            name: Joi.string().optional(),
+            price: Joi.number().optional()
+        })
+    ).optional()
 });

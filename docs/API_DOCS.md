@@ -61,8 +61,22 @@ Daxil olmuş istifadəçinin profil məlumatlarını gətirir. Buraya `plan` və
 ---
 
 ### 5. Profilin Yenilənməsi (Update Me)
-... (qaldığı kimi)
-
+Daxil olmuş istifadəçinin profil məlumatlarını yeniləyir.
+- **URL:** `/auth/update-me`
+- **Method:** `PUT`
+- **Headers:** `Authorization: Bearer <TOKEN>`
+- **Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "bio": "Professional Barber",
+  "services": [
+    { "name": "Saç kəsimi", "price": 15 },
+    { "name": "Saqqal kəsimi", "price": 10 }
+  ]
+}
+```
 ---
 
 ## 👑 Admin Paneli (Yalnız Adminlər üçün)
@@ -116,6 +130,7 @@ Xidmət təminatçısı özü üçün rezervasiya əlavə edir.
   "customerPhone": "+994500000000",
   "note": "Xüsusi istək...",
   "service": "Saç kəsimi",
+  "price": 15,
   "date": "2024-03-25",
   "startTime": "14:00",
   "endTime": "15:00"
@@ -136,6 +151,7 @@ Müştəri provider-in `userURL`-i vasitəsilə rezervasiya istəyi göndərir.
   "customerPhone": "+994700000000",
   "note": "Gecikə bilərəm",
   "service": "Saç kəsimi",
+  "price": 15,
   "date": "2024-03-25",
   "startTime": "10:00",
   "endTime": "11:00"
