@@ -25,7 +25,7 @@ const isOverlapping = async (userId, date, startTime, endTime) => {
 // Provider creates a reservation (Automatically accepted)
 export const createReservationByUser = async (req, res) => {
     try {
-        const { customerName, customerPhone, note, services, price, date, startTime, endTime } = req.body;
+        const { customerName, customerPhone, note, service, price, date, startTime, endTime } = req.body;
         const userId = req.user.userId;
 
         if (startTime >= endTime) {
@@ -42,7 +42,7 @@ export const createReservationByUser = async (req, res) => {
             customerPhone,
             note,
             service,
-            price,
+            price: Number(price) || undefined,
             date,
             startTime,
             endTime,
@@ -53,6 +53,7 @@ export const createReservationByUser = async (req, res) => {
         await newReservation.save();
         res.status(201).json({ message: "Rezervasiya yaradıldı", reservation: newReservation });
     } catch (error) {
+        console.error("Reservation Creation Error:", error);
         res.status(500).json({ message: "Server xətası", error: error.message });
     }
 };
