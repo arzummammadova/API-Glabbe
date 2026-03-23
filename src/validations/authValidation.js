@@ -72,5 +72,12 @@ export const updateMeSchema = Joi.object({
             name: Joi.string().optional(),
             price: Joi.number().optional()
         })
-    ).optional()
+    ).optional(),
+    publicProfileSettings: Joi.object({
+        showEmail: Joi.boolean().optional(),
+        showPhone: Joi.boolean().optional(),
+        showBio: Joi.boolean().optional(),
+        showServices: Joi.boolean().optional(),
+        isPublic: Joi.boolean().optional()
+    }).optional()
 });

@@ -74,10 +74,28 @@ Daxil olmuş istifadəçinin profil məlumatlarını yeniləyir.
   "services": [
     { "name": "Saç kəsimi", "price": 15 },
     { "name": "Saqqal kəsimi", "price": 10 }
-  ]
+  ],
+  "publicProfileSettings": {
+    "showEmail": true,
+    "showPhone": true,
+    "showBio": true,
+    "showServices": true,
+    "isPublic": true
+  }
 }
 ```
+
 ---
+
+### 6. İctimai Profil (Get Public Profile)
+Hər kəs üçün açıq olan profil məlumatlarını gətirir. Hesab gizlidirsə 404 qaytarır.
+- **URL:** `/auth/public-profile/:username`
+- **Method:** `GET`
+- **Status:** `200 OK` (Açıqdırsa), `404 Not Found` (Gizlidirsə və ya yoxdursa)
+- **Qeyd:** Yalnız istifadəçinin icazə verdiyi (settings-də true olan) sahələr qaytarılır.
+
+---
+
 
 ## 👑 Admin Paneli (Yalnız Adminlər üçün)
 
@@ -141,8 +159,8 @@ Xidmət təminatçısı özü üçün rezervasiya əlavə edir.
 ---
 
 ### 2. Rezervasiya Müraciəti (Müştəri tərəfindən)
-Müştəri provider-in `userURL`-i vasitəsilə rezervasiya istəyi göndərir.
-- **URL:** `/api/reservations/customer/:userURL`
+Müştəri provider-in `userURL` və ya `username`-i vasitəsilə rezervasiya istəyi göndərir.
+- **URL:** `/api/reservations/customer/:slug` (slug = username və ya userURL)
 - **Method:** `POST`
 - **Body:**
 ```json

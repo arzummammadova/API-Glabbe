@@ -64,9 +64,11 @@ export const createReservationByCustomer = async (req, res) => {
         const { userURL } = req.params;
         const { customerName, customerPhone, note, service, price, date, startTime, endTime } = req.body;
 
-        const user = await User.findOne({ userURL });
-        if (!user) {
-            return res.status(404).json({ message: "İstifadəçi tapılmadı" });
+        const user = await User.findOne({ 
+            $or: [{ userURL }, { username: userURL }] 
+        });
+        if (!user || user.publicProfileSettings?.isPublic === false) {
+             return res.status(404).json({ message: "İstifadəçi tapılmadı və ya rezervasiyalara bağlıdır" });
         }
 
         if (startTime >= endTime) {

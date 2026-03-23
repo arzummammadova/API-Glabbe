@@ -9,8 +9,10 @@ import {
     getAllUsers,
     getUserById,
     updateUserPlan,
-    deleteUser
+    deleteUser,
+    getPublicProfile
 } from "../controllers/authController.js";
+
 import { validate } from "../middlewares/validateMiddleware.js";
 import { authMiddleware, adminMiddleware } from "../middlewares/authMiddleware.js";
 import { 
@@ -30,6 +32,8 @@ authRouter.get("/verify-email/:token", verifyEmail);
 authRouter.post("/login", validate(loginSchema), loginUser);
 authRouter.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
 authRouter.post("/reset-password/:token", validate(resetPasswordSchema), resetPassword);
+authRouter.get("/public-profile/:username", getPublicProfile);
+
 
 // User routes (Required Auth)
 authRouter.get("/me", authMiddleware, getMe);

@@ -221,6 +221,14 @@ export const updateMe = async (req, res) => {
         delete updates.verificationToken;
         delete updates.resetPasswordToken;
         delete updates.resetPasswordExpires;
+        
+        // Handle nested publicProfileSettings updates
+        if (updates.publicProfileSettings) {
+             Object.keys(updates.publicProfileSettings).forEach(key => {
+                 updates[`publicProfileSettings.${key}`] = updates.publicProfileSettings[key];
+             });
+             delete updates.publicProfileSettings;
+        }
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
@@ -410,3 +418,47 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ message: "Server xətası", error: error.message });
     }
 };
+
+export const getPublicProfile = async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        const user = await User.findOne({ username });
+        
+        if (!user || user.publicProfileSettings?.isPublic === false) {
+            return res.status(404).json({ message: "Profil tapılmadı və ya gizlidir" });
+        }
+
+        const publicData = {
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            businessType: user.businessType,
+            userURL: user.userURL,
+            publicProfileSettings: user.publicProfileSettings
+        };
+
+        if (user.publicProfileSettings?.showEmail) {
+            publicData.email = user.email;
+        }
+
+        if (user.publicProfileSettings?.showPhone) {
+            publicData.phone = user.phone;
+        }
+
+        if (user.publicProfileSettings?.showBio) {
+            publicData.bio = user.bio;
+        }
+
+        if (user.publicProfileSettings?.showServices) {
+            publicData.services = user.services;
+            publicData.price = user.price;
+            publicData.duration = user.duration;
+        }
+
+        res.status(200).json(publicData);
+    } catch (error) {
+        res.status(500).json({ message: "Server xətası", error: error.message });
+    }
+};
+

@@ -86,6 +86,13 @@ const  userSchema=new mongoose.Schema({
     subscriptionExpiration: {
         type: Date,
         default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days trial by default
+    },
+    publicProfileSettings: {
+        showEmail: { type: Boolean, default: true },
+        showPhone: { type: Boolean, default: true },
+        showBio: { type: Boolean, default: true },
+        showServices: { type: Boolean, default: true },
+        isPublic: { type: Boolean, default: true }
     }
 },{timestamps:true})
 
