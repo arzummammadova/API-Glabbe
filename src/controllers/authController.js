@@ -76,7 +76,7 @@ export const registerUser = async (req, res) => {
             `,
             attachments: [{
                 filename: 'logo.png',
-                path: 'c:\\Users\\hp\\Desktop\\Glabbe\\back-end\\src\\upload\\logo.png',
+                path: path.join(process.cwd(), 'src', 'upload', 'logo.png'),
                 cid: 'glabbelogo'
             }]
         };
@@ -288,7 +288,7 @@ export const forgotPassword = async (req, res) => {
             `,
             attachments: [{
                 filename: 'logo.png',
-                path: 'c:\\Users\\hp\\Desktop\\Glabbe\\back-end\\src\\upload\\logo.png',
+                path: path.join(process.cwd(), 'src', 'upload', 'logo.png'),
                 cid: 'glabbelogo'
             }]
         };
@@ -423,7 +423,9 @@ export const getPublicProfile = async (req, res) => {
     try {
         const { username } = req.params;
 
-        const user = await User.findOne({ username });
+        const user = await User.findOne({ 
+            $or: [{ username }, { userURL: username }] 
+        });
         
         if (!user || user.publicProfileSettings?.isPublic === false) {
             return res.status(404).json({ message: "Profil tapılmadı və ya gizlidir" });
